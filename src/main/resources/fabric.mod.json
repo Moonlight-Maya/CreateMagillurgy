@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "create-magillurgy",
   "version": "${version}",
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Create: Magillurgy",
+  "description": "An addon for the Create mod that adds a new magic-based (yet still ultimately scientific and automatable) system to the game, unlocking new machines, recipes, and factories to create!",
   "authors": [
-    "Me!"
+    "Limit System"
   ],
   "contact": {
-    "sources": "https://github.com/Fabricators-of-Create/create-fabric-addon-template"
+    "sources": "https://github.com/Moonlight-Maya/CreateMagillurgy"
   },
-  "license": "CC0",
-  "icon": "assets/modid/icon.png",
+  "license": "MIT",
+  "icon": "assets/create-magillurgy/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.example.modid.ExampleMod"
+      "io.github.moonlight_maya.create_magillurgy.MagillurgyAddon"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "create-magillurgy.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
