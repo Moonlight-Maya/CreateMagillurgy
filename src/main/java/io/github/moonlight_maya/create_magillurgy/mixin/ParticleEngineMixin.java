@@ -17,11 +17,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ParticleEngine.class)
 public class ParticleEngineMixin {
-	@Inject(method = "render", at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/client/particle/ParticleRenderType;end(Lcom/mojang/blaze3d/vertex/Tesselator;)V",
-			shift = At.Shift.BEFORE
-	))
+	@Inject(
+			method = "render",
+			at = @At(
+				value = "INVOKE",
+				target = "Ljava/util/List;iterator()Ljava/util/Iterator;", //LIST iterator, NOT Iterable iterator!
+				shift = At.Shift.AFTER,
+				ordinal = 0
+			)
+	)
 	public void injected(PoseStack matrixStack, MultiBufferSource.BufferSource buffers, LightTexture lightTexture, Camera activeRenderInfo, float partialTicks, CallbackInfo ci) {
 		MagillurgyAddon.TEST_PARTICLES.render(activeRenderInfo, partialTicks);
 	}

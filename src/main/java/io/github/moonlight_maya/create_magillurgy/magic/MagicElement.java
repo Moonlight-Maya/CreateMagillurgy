@@ -1,6 +1,6 @@
 package io.github.moonlight_maya.create_magillurgy.magic;
 
-public enum Element {
+public enum MagicElement {
 	//Order is important, used elsewhere
 	LIFE,
 	ENDER,

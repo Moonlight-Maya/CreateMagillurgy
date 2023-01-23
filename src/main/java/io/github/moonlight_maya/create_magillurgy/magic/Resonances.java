@@ -9,15 +9,15 @@ public class Resonances {
 	private final static int STABILITY_BIT = 1<<28;
 
 	//Getters and setters for ints
-	public static int getElem(int resonance, Element element) {
+	public static int getElem(int resonance, MagicElement element) {
 		int index = element.ordinal() * 4;
 		return (resonance & (0xF << index)) >> index;
 	}
-	public static int setElem(int resonance, Element element, int value) {
+	public static int setElem(int resonance, MagicElement element, int value) {
 		int index = element.ordinal() * 4;
 		return (resonance & ~(0xF << index)) | (value << index);
 	}
-	public static int changeElem(int resonance, Element element, int diff) {
+	public static int changeElem(int resonance, MagicElement element, int diff) {
 		return setElem(resonance, element, getElem(resonance, element) + diff);
 	}
 	public static boolean isStable(int resonance) {
@@ -41,13 +41,13 @@ public class Resonances {
 		int resonance = 0;
 		for (char c : str.toCharArray()) {
 			switch (c) {
-				case 'L', 'l' -> resonance = changeElem(resonance, Element.LIFE, 1);
-				case 'E', 'e' -> resonance = changeElem(resonance, Element.ENDER, 1);
-				case 'S', 's' -> resonance = changeElem(resonance, Element.SOUL, 1);
-				case 'V', 'v' -> resonance = changeElem(resonance, Element.VOID, 1);
-				case 'A', 'a' -> resonance = changeElem(resonance, Element.ASTRAL, 1);
-				case 'N', 'n' -> resonance = changeElem(resonance, Element.NETHER, 1);
-				case 'R', 'r' -> resonance = changeElem(resonance, Element.ARCANE, 1);
+				case 'L', 'l' -> resonance = changeElem(resonance, MagicElement.LIFE, 1);
+				case 'E', 'e' -> resonance = changeElem(resonance, MagicElement.ENDER, 1);
+				case 'S', 's' -> resonance = changeElem(resonance, MagicElement.SOUL, 1);
+				case 'V', 'v' -> resonance = changeElem(resonance, MagicElement.VOID, 1);
+				case 'A', 'a' -> resonance = changeElem(resonance, MagicElement.ASTRAL, 1);
+				case 'N', 'n' -> resonance = changeElem(resonance, MagicElement.NETHER, 1);
+				case 'R', 'r' -> resonance = changeElem(resonance, MagicElement.ARCANE, 1);
 				case '*' -> resonance = makeStable(resonance);
 				default -> throw new IllegalArgumentException("Unexpected character in resonance string: " + c);
 			}
