@@ -2,7 +2,7 @@ package io.github.moonlight_maya.create_magillurgy.mixin;
 
 import io.github.moonlight_maya.create_magillurgy.MagillurgyAddon;
 
-import net.minecraft.core.Vec3i;
+import io.github.moonlight_maya.create_magillurgy.MagillurgyAddonClient;
 import net.minecraft.world.phys.Vec3;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +25,7 @@ public class BlastFurnaceBlockMixin {
 		if (state.getValue(BlockStateProperties.LIT)) {
 			Vec3 particlePos = Vec3.upFromBottomCenterOf(pos, 1.0);
 			Vec3 particleVel = new Vec3(Math.random() * 0.1 - 0.05, Math.random()*0.01, Math.random() * 0.1 - 0.05);
-			MagillurgyAddon.TEST_PARTICLES.addParticle(0, particlePos, particleVel);
+			MagillurgyAddonClient.CLIENT_PARTICLES.addParticle(0, particlePos, particleVel);
 		}
 	}
 }

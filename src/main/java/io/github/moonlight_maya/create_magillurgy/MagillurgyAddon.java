@@ -1,10 +1,12 @@
 package io.github.moonlight_maya.create_magillurgy;
 
-import com.simibubi.create.events.ClientEvents;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 
 import io.github.moonlight_maya.create_magillurgy.magic.MagicParticleManager;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,16 +15,14 @@ import com.simibubi.create.Create;
 
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class MagillurgyAddon implements ModInitializer {
 	public static final String ID = "create-magillurgy";
 	public static final String NAME = "Create: Magillurgy";
 	public static final Logger LOGGER = LoggerFactory.getLogger(NAME);
-
-	public static final MagicParticleManager TEST_PARTICLES = new MagicParticleManager(10000);
+	public static final MagicParticleManager SERVER_PARTICLES = new MagicParticleManager(10000);
+	public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(ID);
 
 	@Override
 	public void onInitialize() {
@@ -32,10 +32,12 @@ public class MagillurgyAddon implements ModInitializer {
 				() -> () -> "{} is accessing Porting Lib from the server!"
 		), NAME);
 
-		ClientTickEvents.START_CLIENT_TICK.register(client -> {
-			TEST_PARTICLES.tick();
-		});
+		MagillurgyBlocks.register();
+		MagillurgyTileEntities.register();
 
+		REGISTRATE.register(); //necessary step on fabric
+
+		ServerTickEvents.END_SERVER_TICK.register(server -> SERVER_PARTICLES.tick());
 	}
 
 	public static ResourceLocation id(String path) {

@@ -3,6 +3,7 @@ package io.github.moonlight_maya.create_magillurgy.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import io.github.moonlight_maya.create_magillurgy.MagillurgyAddon;
+import io.github.moonlight_maya.create_magillurgy.MagillurgyAddonClient;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.ParticleEngine;
 
@@ -27,6 +28,6 @@ public class ParticleEngineMixin {
 			)
 	)
 	public void injected(PoseStack matrixStack, MultiBufferSource.BufferSource buffers, LightTexture lightTexture, Camera activeRenderInfo, float partialTicks, CallbackInfo ci) {
-		MagillurgyAddon.TEST_PARTICLES.render(activeRenderInfo, partialTicks);
+		MagillurgyAddonClient.CLIENT_PARTICLES.render(activeRenderInfo, partialTicks);
 	}
 }

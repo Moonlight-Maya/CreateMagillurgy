@@ -16,6 +16,9 @@
   "entrypoints": {
     "main": [
       "io.github.moonlight_maya.create_magillurgy.MagillurgyAddon"
+    ],
+    "client": [
+      "io.github.moonlight_maya.create_magillurgy.MagillurgyAddonClient"
     ]
   },
   "mixins": [
