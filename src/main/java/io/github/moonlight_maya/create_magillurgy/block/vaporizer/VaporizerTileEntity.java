@@ -21,6 +21,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -118,16 +119,12 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 			//Destroy the item.
 			if (transported.stack.getCount() > 1) {
 				transported.stack.shrink(1);
-				TransportedItemStack held = null;
-				TransportedItemStack result = transported.copy();
-				result.stack = transported.stack.copy();
-				result.stack.setCount(1);
-				if (!transported.stack.isEmpty())
-					held = transported.copy();
-				handler.handleProcessingOnItem(transported, TransportedItemStackHandlerBehaviour.TransportedResult.convertToAndLeaveHeld(List.of(result), held));
+				TransportedItemStack held = transported.stack.isEmpty() ? null : transported.copy();
+				handler.handleProcessingOnItem(transported, TransportedItemStackHandlerBehaviour.TransportedResult.convertToAndLeaveHeld(List.of(), held));
 			} else {
 				handler.handleProcessingOnItem(transported, TransportedItemStackHandlerBehaviour.TransportedResult.removeItem());
 			}
+
 			//Reset the state of the tile entity.
 			lowerTankFluidStack = new FluidStack(FluidVariant.blank(), 0);
 
@@ -184,15 +181,14 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 				long transferSpeed = (long) (CHARGE_PER_RPM_PER_TICK * Math.abs(getSpeed())); //Can only charge as fast as you're spinning the gear
 
 				//Amount actually transferred is the minimum of all three
-				long amountTransferred = Math.min(missingFluid, Math.min(transferSpeed, amountInUpperTank));
+				long amountToTransfer = Math.min(missingFluid, Math.min(transferSpeed, amountInUpperTank));
 				//Perform transfer by growing and shrinking fluid stacks
-				TransactionContext transactionContext = TransferUtil.getTransaction();
-				long actuallyTransferred = upperTank.getCapability().extract(FluidVariant.of(Fluids.WATER), amountTransferred, transactionContext);
-				if (amountTransferred != actuallyTransferred) {
-					MagillurgyAddon.LOGGER.error("Error with fluid processing within vaporizer!");
-					throw new RuntimeException();
+				try(Transaction t = TransferUtil.getTransaction()) {
+					long actuallyTransferred = upperTank.getCapability().extract(FluidVariant.of(Fluids.WATER), amountToTransfer, t);
+					assert actuallyTransferred == amountToTransfer;
+					lowerTankFluidStack.grow(actuallyTransferred);
+					t.commit();
 				}
-				lowerTankFluidStack.grow(actuallyTransferred);
 			}
 		}
 	}

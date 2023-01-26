@@ -10,7 +10,6 @@ public class MagillurgyAddonClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-
 		MagillurgyBlockPartials.init();
 		MagillurgyRenderTypes.init();
 
