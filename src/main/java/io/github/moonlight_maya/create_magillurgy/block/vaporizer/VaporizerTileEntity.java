@@ -16,6 +16,7 @@ import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import io.github.moonlight_maya.create_magillurgy.MagillurgyAddon;
 import io.github.moonlight_maya.create_magillurgy.client.MagillurgyAddonClient;
+import io.github.moonlight_maya.create_magillurgy.magic.MagicParticleManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -133,8 +134,8 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
 				Vec3 position = Vec3.upFromBottomCenterOf(getBlockPos().below(2), 0.6);
 				for (int i = 0; i < 100; i++) {
-					Vec3 particleVel = new Vec3(Math.random() * 0.1 - 0.05, Math.random()*0.01, Math.random() * 0.1 - 0.05);
-					MagillurgyAddonClient.CLIENT_PARTICLES.addParticle(0, position, particleVel);
+					Vec3 vel = MagicParticleManager.randomVelocityHelper(0.15);
+					MagillurgyAddonClient.CLIENT_PARTICLES.addParticle(0, position, vel);
 				}
 			});
 			notifyUpdate();

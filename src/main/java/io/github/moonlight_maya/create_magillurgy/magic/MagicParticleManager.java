@@ -45,6 +45,13 @@ public class MagicParticleManager {
 		velocities = new double[initialSize * 3];
 	}
 
+	public static Vec3 randomVelocityHelper(double speed) {
+		Vec3 vel = new Vec3(Math.random(), Math.random(), Math.random()).scale(2*speed).subtract(speed,speed,speed);
+		while (vel.lengthSqr() > speed * speed)
+			vel = new Vec3(Math.random(), Math.random(), Math.random()).scale(2*speed).subtract(speed,speed,speed);
+		return vel;
+	}
+
 	public void tick() {
 		for (int i = 0; i < count; i++) {
 			if (--life[i] == 0) {
@@ -88,9 +95,10 @@ public class MagicParticleManager {
 		positions[3*index] += velocities[3*index];
 		positions[3*index+1] += velocities[3*index+1];
 		positions[3*index+2] += velocities[3*index+2];
-		velocities[3*index+1] = Mth.clamp(velocities[3*index+1] + 0.001, 0, 0.05);
-		velocities[3*index] *= 0.97;
-		velocities[3*index+2] *= 0.97;
+		double TARGET_Y_VEL = 0.05;
+		velocities[3*index+1] = Mth.lerp(0.01, velocities[3*index+1], TARGET_Y_VEL);
+		velocities[3*index] *= 0.985;
+		velocities[3*index+2] *= 0.985;
 	}
 
 	private void resize() {
