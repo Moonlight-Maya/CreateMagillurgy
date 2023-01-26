@@ -7,6 +7,7 @@ import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.BlockEntry;
 
 import io.github.moonlight_maya.create_magillurgy.block.vaporizer.VaporizerBlock;
+import io.github.moonlight_maya.create_magillurgy.client.MagillurgyRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MaterialColor;
@@ -20,7 +21,7 @@ public class MagillurgyBlocks {
 			.properties(BlockBehaviour.Properties::noOcclusion)
 			.transform(TagGen.axeOrPickaxe())
 			.blockstate((c, p) -> p.simpleBlock(c.getEntry(), AssetLookup.partialBaseModel(c, p)))
-			.addLayer(() -> RenderType::cutoutMipped)
+			.addLayer(() -> RenderType::cutout)
 			.transform(BlockStressDefaults.setImpact(4.0))
 //			.item(AssemblyOperatorBlockItem::new)
 //			.transform(ModelGen.customItemModel())

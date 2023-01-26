@@ -1,4 +1,4 @@
-package io.github.moonlight_maya.create_magillurgy;
+package io.github.moonlight_maya.create_magillurgy.client;
 
 import io.github.moonlight_maya.create_magillurgy.magic.MagicParticleManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -11,7 +11,8 @@ public class MagillurgyAddonClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 
-		MagillurgyBlockPartials.register();
+		MagillurgyBlockPartials.init();
+		MagillurgyRenderTypes.init();
 
 		ClientTickEvents.START_CLIENT_TICK.register(client -> CLIENT_PARTICLES.tick());
 	}
