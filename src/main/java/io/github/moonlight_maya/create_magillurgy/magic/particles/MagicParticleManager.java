@@ -1,4 +1,4 @@
-package io.github.moonlight_maya.create_magillurgy.magic;
+package io.github.moonlight_maya.create_magillurgy.magic.particles;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -26,13 +26,13 @@ public class MagicParticleManager {
 	//it's good to not have them stick around too long.
 	private static final short LIFETIME = 20 * 15;
 
-	private int capacity; //Capacity for particles before the arrays need to be resized
-	private int count;
+	protected int capacity; //Capacity for particles before the arrays need to be resized
+	protected int count;
 	//Multiple arrays because project valhalla doesnt exist yet
-	private int[] resonances;
-	private short[] life; //remaining lifetime in ticks, if it hits zero it will despawn
-	private double[] positions;
-	private double[] velocities;
+	protected int[] resonances;
+	protected short[] life; //remaining lifetime in ticks, if it hits zero it will despawn
+	protected double[] positions;
+	protected double[] velocities;
 
 	//InitialSize is the initial number of particles the system can hold
 	//Arrays double in size when this reaches capacity
@@ -62,17 +62,18 @@ public class MagicParticleManager {
 		}
 	}
 
-	public void addParticle(int resonance, Vec3 pos, Vec3 vel) {
+	//Adds a particle directly, without going through any networking
+	protected void addParticle(int resonance, double x, double y, double z, double xVel, double yVel, double zVel) {
 		if (count == capacity)
 			resize();
 		resonances[count] = resonance;
 		life[count] = LIFETIME;
-		positions[3*count] = pos.x;
-		positions[3*count+1] = pos.y;
-		positions[3*count+2] = pos.z;
-		velocities[3*count] = vel.x;
-		velocities[3*count+1] = vel.y;
-		velocities[3*count+2] = vel.z;
+		positions[3*count] = x;
+		positions[3*count+1] = y;
+		positions[3*count+2] = z;
+		velocities[3*count] = xVel;
+		velocities[3*count+1] = yVel;
+		velocities[3*count+2] = zVel;
 		count++;
 	}
 
@@ -122,51 +123,5 @@ public class MagicParticleManager {
 		capacity *= 2;
 	}
 
-	//Below lies rendering code!
 
-	private static final ResourceLocation PARTICLE_TEXTURE = new ResourceLocation(MagillurgyAddon.ID, "textures/magic.png");
-
-	public void render(Camera camera, float tickDelta) {
-		BufferBuilder buffer = Tesselator.getInstance().getBuilder(); //Same buffer builder used for vanilla particles
-
-		//Items below copied from particle engine and particle render types
-		RenderSystem.setShader(GameRenderer::getParticleShader);
-		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-		RenderSystem.depthMask(true);
-		RenderSystem.setShaderTexture(0, PARTICLE_TEXTURE);
-		RenderSystem.enableBlend();
-		RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-		buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-
-		double camX = camera.getPosition().x;
-		double camY = camera.getPosition().y;
-		double camZ = camera.getPosition().z;
-		Quaternion rot = camera.rotation();
-		for (int i = 0; i < count; i++) {
-			float relX = (float) (Mth.lerp(tickDelta, positions[3*i], positions[3*i]+velocities[3*i]) - camX);
-			float relY = (float) (Mth.lerp(tickDelta, positions[3*i+1], positions[3*i+1]+velocities[3*i+1]) - camY);
-			float relZ = (float) (Mth.lerp(tickDelta, positions[3*i+2], positions[3*i+2]+velocities[3*i+2]) - camZ);
-
-			//random ass numbers hope they look good
-			int spriteIndex = ((i * 7 - life[i] / 3) % 10 + 10) % 10;
-			float v1 = spriteIndex / 10f;
-			float v2 = v1 + 0.1f;
-
-			//lazy copy paste below
-			Vector3f[] vector3fs = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
-			float size = 0.14f;
-			for(int k = 0; k < 4; ++k) {
-				Vector3f vector3f2 = vector3fs[k];
-				vector3f2.transform(rot);
-				vector3f2.mul(size);
-				vector3f2.add(relX, relY, relZ);
-			}
-			//add vertices
-			buffer.vertex(vector3fs[0].x(), vector3fs[0].y(), vector3fs[0].z()).uv(0, v1).color(0.0f, 1.0f, 1.0f, 1.0f).uv2(LightTexture.FULL_BRIGHT).endVertex();
-			buffer.vertex(vector3fs[1].x(), vector3fs[1].y(), vector3fs[1].z()).uv(0, v2).color(0.0f, 1.0f, 1.0f, 1.0f).uv2(LightTexture.FULL_BRIGHT).endVertex();
-			buffer.vertex(vector3fs[2].x(), vector3fs[2].y(), vector3fs[2].z()).uv(1, v2).color(0.0f, 1.0f, 1.0f, 1.0f).uv2(LightTexture.FULL_BRIGHT).endVertex();
-			buffer.vertex(vector3fs[3].x(), vector3fs[3].y(), vector3fs[3].z()).uv(1, v1).color(0.0f, 1.0f, 1.0f, 1.0f).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		}
-		Tesselator.getInstance().end();
-	}
 }

@@ -1,11 +1,8 @@
 package io.github.moonlight_maya.create_magillurgy.block.vaporizer;
 
-import com.simibubi.create.AllItems;
 import com.simibubi.create.content.contraptions.base.KineticTileEntity;
 
-import com.simibubi.create.content.contraptions.fluids.actors.FillingBySpout;
 import com.simibubi.create.content.contraptions.relays.belt.transport.TransportedItemStack;
-import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.tileEntity.TileEntityBehaviour;
 import com.simibubi.create.foundation.tileEntity.behaviour.belt.BeltProcessingBehaviour;
 import com.simibubi.create.foundation.tileEntity.behaviour.belt.TransportedItemStackHandlerBehaviour;
@@ -16,24 +13,24 @@ import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import io.github.moonlight_maya.create_magillurgy.MagillurgyAddon;
 import io.github.moonlight_maya.create_magillurgy.client.MagillurgyAddonClient;
-import io.github.moonlight_maya.create_magillurgy.magic.MagicParticleManager;
+import io.github.moonlight_maya.create_magillurgy.magic.Resonances;
+import io.github.moonlight_maya.create_magillurgy.magic.particles.MagicParticleManager;
+import io.github.moonlight_maya.create_magillurgy.magic.particles.ServerParticleManager;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.material.Fluid;
 
 import net.minecraft.world.level.material.Fluids;
 
@@ -41,12 +38,10 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.simibubi.create.foundation.tileEntity.behaviour.belt.BeltProcessingBehaviour.ProcessingResult.HOLD;
 import static com.simibubi.create.foundation.tileEntity.behaviour.belt.BeltProcessingBehaviour.ProcessingResult.PASS;
-import static com.simibubi.create.foundation.tileEntity.behaviour.belt.BeltProcessingBehaviour.ProcessingResult.REMOVE;
 
 public class VaporizerTileEntity extends KineticTileEntity implements SidedStorageBlockEntity {
 
@@ -60,6 +55,7 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 	//If 0, it just stopped firing, so we should do the conversion
 	//If >0, the firing animation is still happening, so just decrement and move on
 	private int firingTicks;
+	private boolean powered;
 
 	//40500
 	public static final long UPPER_TANK_CAPACITY = FluidConstants.fromBucketFraction(1, 2);
@@ -75,6 +71,12 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 		super(typeIn, pos, state);
 		firingTicks = -1;
 		lowerTankFluidStack = new FluidStack(FluidVariant.blank(), 0);
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
+		updateSignal();
 	}
 
 	public FluidStack fluidInUpperTank() {
@@ -117,6 +119,7 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 
 		//We just finished firing, so time to blow up the item.
 		if (firingTicks == 0) {
+
 			//Destroy the item.
 			if (transported.stack.getCount() > 1) {
 				transported.stack.shrink(1);
@@ -130,20 +133,29 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 			lowerTankFluidStack = new FluidStack(FluidVariant.blank(), 0);
 
 			//All that dealt with, spawn the particles.
-			//Jank temporary code, just to visualize client side.
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+			if (this.level != null && !this.level.isClientSide && this.level instanceof ServerLevel serverLevel) {
+				MagillurgyAddon.SERVER_PARTICLES.beginParticleBurst(100);
 				Vec3 position = Vec3.upFromBottomCenterOf(getBlockPos().below(2), 0.6);
-				for (int i = 0; i < 100; i++) {
+				int resonance1 = Resonances.fromString("NNNNN");
+				int resonance2 = Resonances.fromString("AAAAA");
+				for (int i = 0; i < 4000; i++) {
 					Vec3 vel = MagicParticleManager.randomVelocityHelper(0.15);
-					MagillurgyAddonClient.CLIENT_PARTICLES.addParticle(0, position, vel);
+					if (vel.y < 0) vel = vel.multiply(1, -1, 1);
+					MagillurgyAddon.SERVER_PARTICLES.addParticle(i % 2 == 0 ? resonance1 : resonance2, position.x, position.y, position.z, vel.x, vel.y, vel.z);
 				}
-			});
+				MagillurgyAddon.SERVER_PARTICLES.endParticleBurst(PlayerLookup.tracking(serverLevel, this.getBlockPos()));
+			}
+
 			notifyUpdate();
 			return HOLD;
 		}
 
 		//If we made it to here, then we have a valid item below the vaporizer, and it's fully charged and ready.
 		//Time to begin firing.
+
+		if (powered) return HOLD; //...Unless the machine is powered.
+
+		//Ok, *now* you can fire.
 		firingTicks = TICKS_TO_FIRE;
 		notifyUpdate();
 		return HOLD;
@@ -154,6 +166,7 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 		super.write(compound, clientPacket);
 		compound.putInt("FiringTicks", firingTicks);
 		compound.putLong("LowerTankFluidAmount", lowerTankFluidStack.getAmount());
+		compound.putBoolean("Powered", powered);
 //		compound.putInt("LowerTankFluidResonance", 0);
 	}
 
@@ -163,6 +176,7 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 		firingTicks = compound.getInt("FiringTicks");
 		long fluidAmount = compound.getLong("LowerTankFluidAmount");
 		lowerTankFluidStack = new FluidStack(Fluids.WATER, fluidAmount);
+		powered = compound.getBoolean("Powered");
 	}
 
 	@Override
@@ -194,9 +208,17 @@ public class VaporizerTileEntity extends KineticTileEntity implements SidedStora
 		}
 	}
 
+	public void updateSignal() {
+		boolean shouldPower = level.hasNeighborSignal(worldPosition);
+		if (shouldPower == powered)
+			return;
+		powered = shouldPower;
+		sendData();
+	}
+
 	public float getExtension(float tickDelta) {
-		float ticksLeftFiring = Math.max(firingTicks-tickDelta, 0);
-		if (ticksLeftFiring > 0)
+		float ticksLeftFiring = Math.max(firingTicks-tickDelta, -1);
+		if (ticksLeftFiring > -1)
 			return ticksLeftFiring / TICKS_TO_FIRE;
 		return (float) lowerTankFluidStack.getAmount() / COST_PER_OPERATION;
 	}

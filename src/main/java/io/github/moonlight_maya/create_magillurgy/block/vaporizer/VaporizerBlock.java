@@ -9,7 +9,9 @@ import io.github.moonlight_maya.create_magillurgy.MagillurgyTileEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -31,6 +33,11 @@ public class VaporizerBlock extends KineticBlock implements ITE<VaporizerTileEnt
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return SHAPE;
+	}
+
+	@Override
+	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+		withTileEntityDo(level, pos, VaporizerTileEntity::updateSignal);
 	}
 
 	@Override

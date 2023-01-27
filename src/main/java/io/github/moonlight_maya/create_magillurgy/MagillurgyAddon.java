@@ -2,10 +2,9 @@ package io.github.moonlight_maya.create_magillurgy;
 
 import com.simibubi.create.foundation.data.CreateRegistrate;
 
-import io.github.moonlight_maya.create_magillurgy.magic.MagicParticleManager;
+import io.github.moonlight_maya.create_magillurgy.magic.particles.MagicParticleManager;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-
+import io.github.moonlight_maya.create_magillurgy.magic.particles.ServerParticleManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import org.slf4j.Logger;
@@ -21,7 +20,7 @@ public class MagillurgyAddon implements ModInitializer {
 	public static final String ID = "create-magillurgy";
 	public static final String NAME = "Create: Magillurgy";
 	public static final Logger LOGGER = LoggerFactory.getLogger(NAME);
-	public static final MagicParticleManager SERVER_PARTICLES = new MagicParticleManager(10000);
+	public static final ServerParticleManager SERVER_PARTICLES = new ServerParticleManager(10000);
 	public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(ID);
 
 	@Override

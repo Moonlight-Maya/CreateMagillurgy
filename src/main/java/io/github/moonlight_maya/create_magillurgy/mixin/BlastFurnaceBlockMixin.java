@@ -20,10 +20,10 @@ public class BlastFurnaceBlockMixin {
 
 	@Inject(method = "animateTick", at = @At("HEAD"))
 	public void spawnMagicParticles(BlockState state, Level level, BlockPos pos, RandomSource random, CallbackInfo ci) {
-		if (state.getValue(BlockStateProperties.LIT)) {
-			Vec3 particlePos = Vec3.upFromBottomCenterOf(pos, 1.0);
-			Vec3 particleVel = new Vec3(Math.random() * 0.1 - 0.05, Math.random()*0.01, Math.random() * 0.1 - 0.05);
-			MagillurgyAddonClient.CLIENT_PARTICLES.addParticle(0, particlePos, particleVel);
-		}
+//		if (state.getValue(BlockStateProperties.LIT)) {
+//			Vec3 particlePos = Vec3.upFromBottomCenterOf(pos, 1.0);
+//			Vec3 particleVel = new Vec3(Math.random() * 0.1 - 0.05, Math.random()*0.01, Math.random() * 0.1 - 0.05);
+//			MagillurgyAddonClient.CLIENT_PARTICLES.addParticle(0, particlePos.x, particlePos.y, particlePos.z, particleVel.x, particleVel.y, particleVel.z);
+//		}
 	}
 }
